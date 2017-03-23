@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-// 
+//
 
 package main
 
@@ -30,11 +30,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/b3log/wide/log"
 )
 
 var logger *log.Logger
+var waitGroup = sync.WaitGroup{}
 
 func main() {
 	log.SetLevel("debug")
@@ -118,16 +120,22 @@ func main() {
 	for i, deploy := range deploys {
 		logger.Debug(i, ". "+deploy)
 
-		download(deploy, ver)
+		waitGroup.Add(1)
+		go download(deploy, ver)
 	}
+
+	waitGroup.Wait()
+
+	logger.Info("All files already prepared")
 }
 
 func download(url string, ver string) {
-	logger.Info("Getting deploy [" + url + "]")
+	defer waitGroup.Done()
+	logger.Info("Getting file [" + url + "]")
 
 	res, err := http.Get(url)
 	if nil != err {
-		logger.Error("Get deploy failed: ", err)
+		logger.Error("Get file failed: ", err)
 
 		return
 	}
@@ -135,7 +143,7 @@ func download(url string, ver string) {
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if nil != err {
-		logger.Error("Get deploy failed failed: ", err)
+		logger.Error("Get file failed failed: ", err)
 
 		return
 	}
@@ -154,10 +162,10 @@ func download(url string, ver string) {
 	deployPath := "Application Files/" + ver + path
 	err = ioutil.WriteFile(deployPath, body, 0664)
 	if nil != err {
-		logger.Error("Save deploy failed: ", err)
+		logger.Error("Save file failed: ", err)
 
 		return
 	}
 
-	logger.Info("Saved deploy to [" + deployPath + "]")
+	logger.Info("Saved file to [" + deployPath + "]")
 }
