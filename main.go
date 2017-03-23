@@ -86,7 +86,7 @@ func main() {
 	logger.Info("Getting manifest [" + manifestURL + "]")
 	res, err = http.Get(manifestURL)
 	if nil != err {
-		logger.Error("Get mainifest failed: ", err)
+		logger.Error("Get manifest failed: ", err)
 
 		return
 	}
@@ -94,13 +94,25 @@ func main() {
 	defer res.Body.Close()
 	body, err = ioutil.ReadAll(res.Body)
 	if nil != err {
-		logger.Error("Parse mainifest failed: ")
+		logger.Error("Parse manifest failed: ")
 
 		return
 	}
 
 	manifest := string(body)
 	logger.Trace(manifest)
+
+	err = os.MkdirAll("Application Files/"+ver, 0775)
+	if nil != err {
+		logger.Error("Make [Application Files] folder failed: ", err)
+
+		return
+	}
+
+	err = ioutil.WriteFile("Application Files/"+ver+"/"+"GitHub.exe.manifest", body, 0775)
+	if nil != err {
+		logger.Error("Save manifest failed: ", err)
+	}
 
 	parts := strings.SplitAfter(manifest, "codebase=\"")
 	deploys := []string{}
@@ -110,11 +122,11 @@ func main() {
 		deploys = append(deploys, verURL+"/"+part+".deploy")
 	}
 
-	err = os.MkdirAll("Application Files/"+ver, 0775)
-	if nil != err {
-		logger.Error("Make [Application Files] folder failed: ", err)
-
-		return
+	parts = strings.SplitAfter(manifest, "file name=\"")
+	for _, part := range parts[1:] {
+		part = strings.Split(part, "\"")[0]
+		part = strings.Replace(part, "\\", "/", -1)
+		deploys = append(deploys, verURL+"/"+part+".deploy")
 	}
 
 	for i, deploy := range deploys {
