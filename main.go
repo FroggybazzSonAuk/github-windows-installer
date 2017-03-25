@@ -44,6 +44,9 @@ func main() {
 	log.SetLevel("debug")
 	logger = log.NewLogger(os.Stdout)
 
+	//os.Setenv("HTTP_PROXY", "http://127.0.0.1:8087")
+	//os.Setenv("HTTPS_PROXY", "https://127.0.0.1:8087")
+
 	os.Remove(dir) // 先删除可能已经存在的
 	os.Mkdir(dir, 0775)
 
@@ -158,7 +161,7 @@ func main() {
 		return
 	}
 
-	zipFile.AddDirectory(dir, zipPath)
+	zipFile.AddDirectory(dir, dir)
 	if nil != zipFile.Close() {
 		logger.Error("Create zip file failed: ", err)
 
