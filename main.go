@@ -114,6 +114,7 @@ func main() {
 		logger.Error("Save manifest failed: ", err)
 	}
 
+	// 解析所需包文件下载路径
 	parts := strings.SplitAfter(manifest, "codebase=\"")
 	deploys := []string{}
 	for _, part := range parts[1:] {
@@ -122,6 +123,7 @@ func main() {
 		deploys = append(deploys, verURL+"/"+part+".deploy")
 	}
 
+	// 解析所需资源文件下载路径
 	parts = strings.SplitAfter(manifest, "file name=\"")
 	for _, part := range parts[1:] {
 		part = strings.Split(part, "\"")[0]
@@ -129,6 +131,7 @@ func main() {
 		deploys = append(deploys, verURL+"/"+part+".deploy")
 	}
 
+	// 并发下载
 	for i, deploy := range deploys {
 		logger.Debug(i, ". "+deploy)
 
