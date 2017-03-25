@@ -45,7 +45,7 @@ func main() {
 	logger = log.NewLogger(os.Stdout)
 
 	os.Remove(dir) // 先删除可能已经存在的
-	os.Mkdir(dir)
+	os.Mkdir(dir, 0775)
 
 	host := "http://github-windows.s3.amazonaws.com"
 
