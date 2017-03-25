@@ -33,14 +33,19 @@ import (
 	"sync"
 
 	"github.com/b3log/wide/log"
+	"github.com/b3log/wide/util"
 )
 
 var logger *log.Logger
 var waitGroup = sync.WaitGroup{}
+var dir = "github-windows"
 
 func main() {
 	log.SetLevel("debug")
 	logger = log.NewLogger(os.Stdout)
+
+	os.Remove(dir) // 先删除可能已经存在的
+	os.Mkdir(dir)
 
 	host := "http://github-windows.s3.amazonaws.com"
 
@@ -63,7 +68,7 @@ func main() {
 	}
 
 	metadata := string(body)
-	ioutil.WriteFile("GitHub.application", body, 0644)
+	ioutil.WriteFile(dir+"/GitHub.application", body, 0644)
 
 	manifestURI := metadata
 	manifestURI = strings.Split(manifestURI, "codebase=\"")[1]
@@ -102,14 +107,14 @@ func main() {
 	manifest := string(body)
 	logger.Trace(manifest)
 
-	err = os.MkdirAll("Application Files/"+ver, 0775)
+	err = os.MkdirAll(dir+"/Application Files/"+ver, 0775)
 	if nil != err {
 		logger.Error("Make [Application Files] folder failed: ", err)
 
 		return
 	}
 
-	err = ioutil.WriteFile("Application Files/"+ver+"/"+"GitHub.exe.manifest", body, 0775)
+	err = ioutil.WriteFile(dir+"/Application Files/"+ver+"/"+"GitHub.exe.manifest", body, 0775)
 	if nil != err {
 		logger.Error("Save manifest failed: ", err)
 	}
@@ -140,8 +145,27 @@ func main() {
 	}
 
 	waitGroup.Wait()
+	logger.Info("All files already downloaded, getting start zip them")
 
-	logger.Info("All files already prepared")
+	// 打包
+	zipPath := "github-windows.zip"
+	os.Remove(zipPath) // 先删除可能已经存在的
+
+	zipFile, err := util.Zip.Create(zipPath)
+	if nil != err {
+		logger.Error("Create zip file failed: ", err)
+
+		return
+	}
+
+	zipFile.AddDirectory(dir, zipPath)
+	if nil != zipFile.Close() {
+		logger.Error("Create zip file failed: ", err)
+
+		return
+	}
+
+	logger.Info("Created GitHub Windows setup :p")
 }
 
 func download(url string, ver string) {
@@ -166,7 +190,7 @@ func download(url string, ver string) {
 	path := strings.Split(url, ver)[1]
 	dir := filepath.Dir(path)
 	if "/" != dir {
-		err = os.MkdirAll("Application Files/"+ver+dir, 0755)
+		err = os.MkdirAll(dir+"/Application Files/"+ver+dir, 0755)
 		if nil != err {
 			logger.Error("Make [Application Files] folder failed: ", err)
 
@@ -174,7 +198,7 @@ func download(url string, ver string) {
 		}
 	}
 
-	deployPath := "Application Files/" + ver + path
+	deployPath := dir + "/Application Files/" + ver + path
 	err = ioutil.WriteFile(deployPath, body, 0664)
 	if nil != err {
 		logger.Error("Save file failed: ", err)
