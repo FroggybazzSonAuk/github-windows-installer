@@ -14,7 +14,7 @@ GitHub Windows 是在线安装的，需要连接亚马逊云。因为你懂的�
 
 ## 使用步骤
 
-1. 在国外服务器上部署 gwi（可以[下载](https://pan.baidu.com/s/1o7BzBC2)也可自行构建）
+1. 在国外服务器上部署 gwi（[下载](https://pan.baidu.com/s/1o7BzBC2)或自行构建）
 2. 运行 gwi，将在当前工作目录生成 github-windows.zip 安装包 
 3. 下载安装包到本地后运行 GitHub.application
 4. 安装完成！
