@@ -2,7 +2,7 @@
 
 GitHub Windows 安装器，简称 GWI。项目地址：https://github.com/b3log/github-windows-installer
 
-## 问题简介
+## 项目背景
 
 GitHub Windows 是在线安装的，需要连接亚马逊云。因为你懂的原因，使得安装 GitHub Windows 成了一个问题 :sob: 
 
