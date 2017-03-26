@@ -1,6 +1,6 @@
 # github-windows-installer
 
-GitHub Windows 安装器，简称 GWI。
+GitHub Windows 安装器，简称 GWI。项目地址：https://github.com/b3log/github-windows-installer
 
 ## 问题简介
 
