@@ -38,7 +38,9 @@ import (
 
 var logger *log.Logger
 var waitGroup = sync.WaitGroup{}
-var dir = "github-windows"
+
+// 中间文件目录.
+const PKG_DIR = "github-windows"
 
 func main() {
 	log.SetLevel("debug")
@@ -47,8 +49,8 @@ func main() {
 	//os.Setenv("HTTP_PROXY", "http://127.0.0.1:8087")
 	//os.Setenv("HTTPS_PROXY", "https://127.0.0.1:8087")
 
-	os.Remove(dir) // 先删除可能已经存在的
-	os.Mkdir(dir, 0775)
+	os.Remove(PKG_DIR) // 先删除可能已经存在的
+	os.Mkdir(PKG_DIR, 0775)
 
 	host := "http://github-windows.s3.amazonaws.com"
 
@@ -71,7 +73,7 @@ func main() {
 	}
 
 	metadata := string(body)
-	ioutil.WriteFile(dir+"/GitHub.application", body, 0644)
+	ioutil.WriteFile(PKG_DIR+"/GitHub.application", body, 0644)
 
 	manifestURI := metadata
 	manifestURI = strings.Split(manifestURI, "codebase=\"")[1]
@@ -110,14 +112,14 @@ func main() {
 	manifest := string(body)
 	logger.Trace(manifest)
 
-	err = os.MkdirAll(dir+"/Application Files/"+ver, 0775)
+	err = os.MkdirAll(PKG_DIR+"/Application Files/"+ver, 0775)
 	if nil != err {
 		logger.Error("Make [Application Files] folder failed: ", err)
 
 		return
 	}
 
-	err = ioutil.WriteFile(dir+"/Application Files/"+ver+"/"+"GitHub.exe.manifest", body, 0775)
+	err = ioutil.WriteFile(PKG_DIR+"/Application Files/"+ver+"/"+"GitHub.exe.manifest", body, 0775)
 	if nil != err {
 		logger.Error("Save manifest failed: ", err)
 	}
@@ -161,7 +163,7 @@ func main() {
 		return
 	}
 
-	zipFile.AddDirectory(dir, dir)
+	zipFile.AddDirectory(PKG_DIR, PKG_DIR)
 	if nil != zipFile.Close() {
 		logger.Error("Create zip file failed: ", err)
 
@@ -169,6 +171,8 @@ func main() {
 	}
 
 	logger.Info("Created GitHub Windows setup :p")
+
+	os.Remove(PKG_DIR) // 清理中间文件
 }
 
 func download(url string, ver string) {
@@ -193,7 +197,7 @@ func download(url string, ver string) {
 	path := strings.Split(url, ver)[1]
 	dir := filepath.Dir(path)
 	if "/" != dir {
-		err = os.MkdirAll(dir+"/Application Files/"+ver+dir, 0755)
+		err = os.MkdirAll(PKG_DIR+"/Application Files/"+ver+dir, 0755)
 		if nil != err {
 			logger.Error("Make [Application Files] folder failed: ", err)
 
@@ -201,7 +205,7 @@ func download(url string, ver string) {
 		}
 	}
 
-	deployPath := dir + "/Application Files/" + ver + path
+	deployPath := PKG_DIR + "/Application Files/" + ver + path
 	err = ioutil.WriteFile(deployPath, body, 0664)
 	if nil != err {
 		logger.Error("Save file failed: ", err)
