@@ -1,3 +1,7 @@
+GitHub 已经提供了[完整安装包](https://desktop.github.com)，所以这个项目可以退休了 :smile: 
+
+----
+
 # github-windows-installer
 
 GitHub Windows 安装器，简称 GWI。项目地址：https://github.com/b3log/github-windows-installer
